@@ -97,7 +97,14 @@ public class RenderView:UIView, ImageConsumer {
         // and then the view size would change to the new size at the next layout pass and distort our already drawn image.
         // Since we do not call this function often we do not need to worry about the performance impact of calling flush.
         CATransaction.flush()
-        sharedImageProcessingContext.context.renderbufferStorage(Int(GL_RENDERBUFFER), from:self.internalLayer)
+        let group = DispatchGroup()
+        group.enter()
+
+        DispatchQueue.main.async {
+            sharedImageProcessingContext.context.renderbufferStorage(Int(GL_RENDERBUFFER), from:self.layer as! CAEAGLLayer)
+            group.leave()
+        }
+        group.wait()
         
         var backingWidth:GLint = 0
         var backingHeight:GLint = 0
